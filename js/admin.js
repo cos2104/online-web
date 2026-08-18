@@ -218,6 +218,161 @@ async function deleteFaq(id) {
   await loadFaqs();
 }
 
+// ============ 엑셀 일괄 업로드 (관리자) ============
+const VALID_CATS = ['수업 운영', '출결 관리', '시스템 이용', '학적 관리', '기타'];
+let parsedRows = [];
+
+document.getElementById('uploadFaqBtn').addEventListener('click', () => {
+  resetUpload();
+  document.getElementById('uploadModal').classList.add('open');
+});
+
+document.getElementById('uploadCancelBtn').addEventListener('click', () =>
+  document.getElementById('uploadModal').classList.remove('open'));
+
+function resetUpload() {
+  parsedRows = [];
+  document.getElementById('excelFile').value = '';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('uploadSubmitBtn').disabled = true;
+  document.getElementById('uploadSubmitBtn').textContent = '등록하기';
+}
+
+// 양식 다운로드
+document.getElementById('downloadTemplateBtn').addEventListener('click', () => {
+  const rows = [
+    ['카테고리', '질문', '답변'],
+    ['수업 운영', '온라인 수업 출석은 어떻게 확인하나요?', '수업 종료 후 학습관리시스템의 출결 메뉴에서 확인할 수 있습니다.'],
+    ['시스템 이용', '비밀번호를 잊어버렸습니다.', '로그인 화면의 비밀번호 찾기를 이용하거나 담당 교사에게 문의해주세요.']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 14 }, { wch: 44 }, { wch: 60 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'FAQ');
+  XLSX.writeFile(wb, 'FAQ_업로드_양식.xlsx');
+  toast('양식을 다운로드했습니다.', 'ok');
+});
+
+// 파일 선택 / 드래그앤드롭
+const dropZone = document.getElementById('dropZone');
+const excelFile = document.getElementById('excelFile');
+
+excelFile.addEventListener('change', e => {
+  if (e.target.files[0]) readExcel(e.target.files[0]);
+});
+
+['dragenter', 'dragover'].forEach(ev =>
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); }));
+['dragleave', 'drop'].forEach(ev =>
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('dragover'); }));
+
+dropZone.addEventListener('drop', e => {
+  const file = e.dataTransfer.files[0];
+  if (file) readExcel(file);
+});
+
+function readExcel(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false });
+      parseRows(rows, file.name);
+    } catch (err) {
+      toast('파일을 읽을 수 없습니다. 형식을 확인해주세요.', 'err');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseRows(rows, fileName) {
+  if (!rows.length) { toast('빈 파일입니다.', 'err'); return; }
+
+  // 첫 행이 제목행이면 건너뜀
+  const first = (rows[0] || []).map(c => String(c ?? '').trim());
+  const hasHeader = first.some(c => ['카테고리', '질문', '답변', 'category', 'question', 'answer'].includes(c.toLowerCase()));
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+
+  const existing = new Set(allFaqs.map(f => f.question.trim()));
+  const seen = new Set();
+
+  parsedRows = dataRows.map((r, i) => {
+    const category = String(r[0] ?? '').trim();
+    const question = String(r[1] ?? '').trim();
+    const answer   = String(r[2] ?? '').trim();
+
+    let status = 'ok', note = '등록';
+    if (!question || !answer) { status = 'err'; note = '누락'; }
+    else if (existing.has(question) || seen.has(question)) { status = 'skip'; note = '중복'; }
+
+    if (status === 'ok') seen.add(question);
+
+    return {
+      no: i + 1,
+      category: VALID_CATS.includes(category) ? category : '기타',
+      question, answer, status, note
+    };
+  }).filter(r => r.question || r.answer);  // 완전 빈 행 제외
+
+  renderPreview(fileName);
+}
+
+function renderPreview(fileName) {
+  const ok   = parsedRows.filter(r => r.status === 'ok').length;
+  const skip = parsedRows.filter(r => r.status === 'skip').length;
+  const err  = parsedRows.filter(r => r.status === 'err').length;
+
+  document.getElementById('previewSummary').innerHTML = `
+    <span>📄 ${escapeHtml(fileName)}</span>
+    <span class="sum-ok">등록 예정 <b>${ok}</b>건</span>
+    ${skip ? `<span class="sum-skip">중복 제외 <b>${skip}</b>건</span>` : ''}
+    ${err ? `<span class="sum-err">오류 <b>${err}</b>건</span>` : ''}`;
+
+  document.getElementById('previewBody').innerHTML = parsedRows.map(r => `
+    <tr class="${r.status === 'ok' ? '' : 'row-' + r.status}">
+      <td>${r.no}</td>
+      <td>${escapeHtml(r.category)}</td>
+      <td><div class="cell-clip">${escapeHtml(r.question) || '<i style="color:#c62828">비어 있음</i>'}</div></td>
+      <td><div class="cell-clip">${escapeHtml(r.answer) || '<i style="color:#c62828">비어 있음</i>'}</div></td>
+      <td><span class="st-badge st-${r.status}">${r.note}</span></td>
+    </tr>`).join('');
+
+  document.getElementById('uploadPreview').style.display = 'block';
+  const btn = document.getElementById('uploadSubmitBtn');
+  btn.disabled = ok === 0;
+  btn.textContent = ok ? `${ok}건 등록하기` : '등록할 항목 없음';
+}
+
+document.getElementById('uploadSubmitBtn').addEventListener('click', async () => {
+  const items = parsedRows.filter(r => r.status === 'ok')
+    .map(r => ({ category: r.category, question: r.question, answer: r.answer }));
+  if (!items.length) return;
+
+  const btn = document.getElementById('uploadSubmitBtn');
+  btn.disabled = true;
+
+  // 100건씩 나눠서 등록
+  let done = 0;
+  for (let i = 0; i < items.length; i += 100) {
+    const chunk = items.slice(i, i + 100);
+    btn.textContent = `등록 중... ${done}/${items.length}`;
+    const { error } = await db.from('faqs').insert(chunk);
+    if (error) {
+      toast(`등록 실패 (${done}건 완료): ${error.message}`, 'err');
+      btn.disabled = false; btn.textContent = '다시 시도';
+      await loadFaqs();
+      return;
+    }
+    done += chunk.length;
+  }
+
+  document.getElementById('uploadModal').classList.remove('open');
+  toast(`FAQ ${done}건이 등록되었습니다.`, 'ok');
+  resetUpload();
+  await loadFaqs();
+});
+
 // ============ 구성원 관리 (관리자) ============
 async function loadMembers() {
   const { data } = await db.from('admins').select('*').order('created_at', { ascending: true });

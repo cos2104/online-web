@@ -79,7 +79,8 @@
 
     <!-- FAQ 관리 -->
     <section class="admin-panel" id="panel-faq">
-      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+      <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-bottom:1rem">
+        <button class="btn btn-secondary btn-sm" id="uploadFaqBtn">📊 엑셀 업로드</button>
         <button class="btn btn-primary btn-sm" id="addFaqBtn">+ FAQ 추가</button>
       </div>
       <div id="adminFaqList"><div class="skeleton"></div><div class="skeleton"></div></div>
@@ -132,6 +133,45 @@
   </div>
 </div>
 
+<!-- 엑셀 업로드 모달 -->
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal" style="max-width:760px">
+    <h3>📊 엑셀로 FAQ 일괄 등록</h3>
+
+    <div class="notice notice-info">
+      <span>📋</span>
+      <span>엑셀 파일의 첫 행은 <b>제목행</b>이어야 하며, <b>카테고리 · 질문 · 답변</b> 순서로 구성해주세요.
+        양식이 필요하면 아래 <b>양식 다운로드</b>를 이용하세요. (.xlsx / .xls / .csv 지원)</span>
+    </div>
+
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+      <button class="btn btn-secondary btn-sm" id="downloadTemplateBtn">⬇️ 양식 다운로드</button>
+    </div>
+
+    <label class="drop-zone" id="dropZone">
+      <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" hidden>
+      <div class="dz-icon">📁</div>
+      <div class="dz-text">엑셀 파일을 여기로 끌어다 놓거나 <b>클릭해서 선택</b></div>
+      <div class="dz-sub">.xlsx · .xls · .csv</div>
+    </label>
+
+    <div id="uploadPreview" style="display:none">
+      <div class="preview-summary" id="previewSummary"></div>
+      <div class="preview-wrap">
+        <table class="preview-table">
+          <thead><tr><th style="width:36px">#</th><th style="width:100px">카테고리</th><th>질문</th><th>답변</th><th style="width:78px">상태</th></tr></thead>
+          <tbody id="previewBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="uploadCancelBtn">취소</button>
+      <button class="btn btn-primary" id="uploadSubmitBtn" disabled>등록하기</button>
+    </div>
+  </div>
+</div>
+
 <!-- 답변 모달 -->
 <div class="modal-overlay" id="answerModal">
   <div class="modal">
@@ -157,6 +197,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="js/supabase-config.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/admin.js"></script>
