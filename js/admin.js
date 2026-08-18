@@ -1,34 +1,25 @@
 let allFaqs = [];
 let allPosts = [];
+let adminUsers = [];
 
-// 로그인
-async function checkSession() {
-  const { data: { session } } = await db.auth.getSession();
-  if (session) showAdmin();
-}
+// 진입 시 권한 확인
+async function boot() {
+  await initAuth();
 
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pw = document.getElementById('loginPassword').value;
-  const err = document.getElementById('loginError');
-  err.style.display = 'none';
+  if (!currentUser) {
+    document.getElementById('loginWrap').style.display = 'flex';
+    return;
+  }
+  if (!isAdmin) {
+    document.getElementById('noAccessEmail').textContent = currentUser.email;
+    document.getElementById('noAccessWrap').style.display = 'flex';
+    return;
+  }
 
-  const { error } = await db.auth.signInWithPassword({ email, password: pw });
-  if (error) { err.style.display = 'block'; return; }
-  showAdmin();
-});
-
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await db.auth.signOut();
-  document.getElementById('adminPanel').style.display = 'none';
-  document.getElementById('loginWrap').style.display = 'flex';
-});
-
-function showAdmin() {
-  document.getElementById('loginWrap').style.display = 'none';
   document.getElementById('adminPanel').style.display = 'block';
   loadAdminFaqs();
   loadAdminPosts();
+  loadAdminUsers();
 }
 
 // 탭 전환
@@ -41,7 +32,7 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
   });
 });
 
-// FAQ 관리
+// ===== FAQ 관리 =====
 async function loadAdminFaqs() {
   const { data } = await db.from('faqs').select('*').order('created_at', { ascending: false });
   allFaqs = data || [];
@@ -58,7 +49,7 @@ function renderAdminFaqs() {
     <div class="admin-faq-row">
       <div style="flex:1">
         <div class="row-text">${f.question}</div>
-        <div class="row-cat">${f.category || '일반'}</div>
+        <div class="row-cat">${f.category || '일반'} · 👍 ${f.helpful_yes || 0} 👎 ${f.helpful_no || 0}</div>
       </div>
       <div class="row-actions">
         <button class="btn btn-secondary btn-sm" onclick="openEditFaq('${f.id}')">수정</button>
@@ -81,7 +72,7 @@ function openEditFaq(id) {
   if (!faq) return;
   document.getElementById('faqModalTitle').textContent = 'FAQ 수정';
   document.getElementById('faqEditId').value = id;
-  document.getElementById('faqCatInput').value = faq.category || '';
+  document.getElementById('faqCatInput').value = faq.category || '기타';
   document.getElementById('faqQInput').value = faq.question;
   document.getElementById('faqAInput').value = faq.answer;
   document.getElementById('faqModal').classList.add('open');
@@ -89,7 +80,8 @@ function openEditFaq(id) {
 
 async function deleteFaq(id) {
   if (!confirm('이 FAQ를 삭제하시겠습니까?')) return;
-  await db.from('faqs').delete().eq('id', id);
+  const { error } = await db.from('faqs').delete().eq('id', id);
+  if (error) { alert('삭제 실패: ' + error.message); return; }
   await loadAdminFaqs();
 }
 
@@ -100,11 +92,11 @@ document.getElementById('faqModalSaveBtn').addEventListener('click', async () =>
   const answer = document.getElementById('faqAInput').value.trim();
   if (!question || !answer) { alert('질문과 답변을 입력해주세요.'); return; }
 
-  if (id) {
-    await db.from('faqs').update({ category, question, answer }).eq('id', id);
-  } else {
-    await db.from('faqs').insert([{ category, question, answer }]);
-  }
+  const { error } = id
+    ? await db.from('faqs').update({ category, question, answer }).eq('id', id)
+    : await db.from('faqs').insert([{ category, question, answer }]);
+
+  if (error) { alert('저장 실패: ' + error.message); return; }
   document.getElementById('faqModal').classList.remove('open');
   await loadAdminFaqs();
 });
@@ -113,12 +105,11 @@ document.getElementById('faqModalCancelBtn').addEventListener('click', () => {
   document.getElementById('faqModal').classList.remove('open');
 });
 
-// 게시판 관리
+// ===== 게시판 관리 =====
 async function loadAdminPosts() {
   const { data } = await db.from('posts').select('*').order('created_at', { ascending: false });
   allPosts = data || [];
-  const pending = allPosts.filter(p => !p.answer).length;
-  document.getElementById('pendingBadge').textContent = pending;
+  document.getElementById('pendingBadge').textContent = allPosts.filter(p => !p.answer).length;
   renderAdminPosts();
 }
 
@@ -135,7 +126,7 @@ function renderAdminPosts() {
         <div class="row-cat">${p.category ? `[${p.category}] · ` : ''}${p.author || '익명'} · ${formatDate(p.created_at)} · <span style="color:${p.answer ? 'var(--primary)' : '#d97706'}">${p.answer ? '답변완료' : '답변대기'}</span></div>
       </div>
       <div class="row-actions">
-        <button class="btn btn-primary btn-sm" onclick="openAnswer('${p.id}')">답변</button>
+        <button class="btn btn-primary btn-sm" onclick="openAnswer('${p.id}')">${p.answer ? '수정' : '답변'}</button>
         <button class="btn btn-danger btn-sm" onclick="deletePost('${p.id}')">삭제</button>
       </div>
     </div>
@@ -159,12 +150,15 @@ document.getElementById('answerSubmitBtn').addEventListener('click', async () =>
   const addToFaq = document.getElementById('addToFaqCheck').checked;
   if (!answer) { alert('답변을 입력해주세요.'); return; }
 
-  await db.from('posts').update({ answer, answered_at: new Date().toISOString() }).eq('id', id);
+  const { error } = await db.from('posts')
+    .update({ answer, answered_at: new Date().toISOString() }).eq('id', id);
+  if (error) { alert('답변 등록 실패: ' + error.message); return; }
 
   if (addToFaq) {
     const post = allPosts.find(p => String(p.id) === String(id));
     if (post) {
       await db.from('faqs').insert([{ category: post.category || '기타', question: post.title, answer }]);
+      await loadAdminFaqs();
     }
   }
 
@@ -178,8 +172,52 @@ document.getElementById('answerCancelBtn').addEventListener('click', () => {
 
 async function deletePost(id) {
   if (!confirm('이 게시글을 삭제하시겠습니까?')) return;
-  await db.from('posts').delete().eq('id', id);
+  const { error } = await db.from('posts').delete().eq('id', id);
+  if (error) { alert('삭제 실패: ' + error.message); return; }
   await loadAdminPosts();
+}
+
+// ===== 관리자 관리 =====
+async function loadAdminUsers() {
+  const { data } = await db.from('admins').select('*').order('created_at', { ascending: true });
+  adminUsers = data || [];
+  renderAdminUsers();
+}
+
+function renderAdminUsers() {
+  const el = document.getElementById('adminUserList');
+  el.innerHTML = adminUsers.map(a => `
+    <div class="admin-faq-row">
+      <div style="flex:1">
+        <div class="row-text">${a.email}</div>
+        <div class="row-cat">${a.name || '이름 없음'}</div>
+      </div>
+      <div class="row-actions">
+        ${a.email === currentUser.email
+          ? '<span style="font-size:0.78rem;color:var(--text-muted)">본인</span>'
+          : `<button class="btn btn-danger btn-sm" onclick="removeAdmin('${a.email}')">삭제</button>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('addAdminBtn').addEventListener('click', async () => {
+  const email = document.getElementById('newAdminEmail').value.trim();
+  const name = document.getElementById('newAdminName').value.trim();
+  if (!email) { alert('이메일을 입력해주세요.'); return; }
+
+  const { error } = await db.from('admins').insert([{ email, name }]);
+  if (error) { alert('추가 실패: ' + error.message); return; }
+  document.getElementById('newAdminEmail').value = '';
+  document.getElementById('newAdminName').value = '';
+  await loadAdminUsers();
+});
+
+async function removeAdmin(email) {
+  if (!confirm(`${email} 님의 관리자 권한을 제거하시겠습니까?`)) return;
+  const { error } = await db.from('admins').delete().eq('email', email);
+  if (error) { alert('삭제 실패: ' + error.message); return; }
+  await loadAdminUsers();
 }
 
 function formatDate(str) {
@@ -188,11 +226,10 @@ function formatDate(str) {
   return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// 모달 외부 클릭 닫기
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) overlay.classList.remove('open');
   });
 });
 
-checkSession();
+boot();

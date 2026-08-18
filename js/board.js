@@ -71,9 +71,19 @@ document.querySelectorAll('.cat-tab').forEach(btn => {
   });
 });
 
-// 질문 작성
+// 질문 작성 (로그인 필요)
 document.getElementById('writeBtn').addEventListener('click', () => {
+  if (!currentUser) {
+    document.getElementById('loginModal').classList.add('open');
+    return;
+  }
+  document.getElementById('authorInput').value =
+    currentUser.user_metadata?.full_name || currentUser.email;
   document.getElementById('writeModal').classList.add('open');
+});
+
+document.getElementById('loginModalCancelBtn').addEventListener('click', () => {
+  document.getElementById('loginModal').classList.remove('open');
 });
 
 document.getElementById('writeCancelBtn').addEventListener('click', () => {
@@ -81,7 +91,8 @@ document.getElementById('writeCancelBtn').addEventListener('click', () => {
 });
 
 document.getElementById('writeSubmitBtn').addEventListener('click', async () => {
-  const author = document.getElementById('authorInput').value.trim();
+  if (!currentUser) { alert('로그인이 필요합니다.'); return; }
+
   const category = document.getElementById('categoryInput').value;
   const title = document.getElementById('titleInput').value.trim();
   const content = document.getElementById('contentInput').value.trim();
@@ -91,13 +102,16 @@ document.getElementById('writeSubmitBtn').addEventListener('click', async () => 
   const btn = document.getElementById('writeSubmitBtn');
   btn.disabled = true; btn.textContent = '등록 중...';
 
-  const { error } = await db.from('posts').insert([{ author, category, title, content }]);
+  const { error } = await db.from('posts').insert([{
+    author: currentUser.user_metadata?.full_name || currentUser.email,
+    author_email: currentUser.email,
+    category, title, content
+  }]);
   btn.disabled = false; btn.textContent = '등록하기';
 
-  if (error) { alert('등록에 실패했습니다.'); return; }
+  if (error) { alert('등록에 실패했습니다: ' + error.message); return; }
 
   document.getElementById('writeModal').classList.remove('open');
-  document.getElementById('authorInput').value = '';
   document.getElementById('titleInput').value = '';
   document.getElementById('contentInput').value = '';
   document.getElementById('categoryInput').value = '';
@@ -115,4 +129,4 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
-loadPosts();
+initAuth().then(loadPosts);

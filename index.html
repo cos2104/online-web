@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>전남온라인학교 FAQ</title>
+  <link rel="icon" href="images/logo.png">
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -11,14 +12,20 @@
 <body>
 
 <nav>
-  <a class="nav-logo" href="index.html"><span>🌿</span> 전남온라인학교</a>
-  <div class="nav-links">
-    <a href="index.html" class="active">FAQ</a>
-    <a href="board.html">질문 게시판</a>
+  <a class="nav-logo" href="index.html">
+    <img src="images/logo.png" alt="전남온라인학교"> 전남온라인학교
+  </a>
+  <div class="nav-right">
+    <div class="nav-links">
+      <a href="index.html" class="active">FAQ</a>
+      <a href="board.html">질문 게시판</a>
+    </div>
+    <div id="authArea"></div>
   </div>
 </nav>
 
 <div class="hero">
+  <img src="images/logo.png" alt="전남온라인학교" class="hero-logo">
   <h1>자주 묻는 질문</h1>
   <p>전남온라인학교 운영과 관련된 자주 묻는 질문들을 모아두었습니다.</p>
   <div class="search-wrap">
@@ -54,6 +61,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/faq.js"></script>
 </body>
 </html>

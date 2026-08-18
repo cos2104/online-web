@@ -83,8 +83,9 @@ function renderFaqs(faqs) {
       if (voted[id]) return;
       const col = type === 'yes' ? 'helpful_yes' : 'helpful_no';
       const faq = allFaqs.find(f => String(f.id) === String(id));
+      const { error } = await db.rpc('vote_helpful', { faq_id: id, is_yes: type === 'yes' });
+      if (error) return;
       const newVal = (faq[col] || 0) + 1;
-      await db.from('faqs').update({ [col]: newVal }).eq('id', id);
       faq[col] = newVal;
       voted[id] = true;
       localStorage.setItem('voted', JSON.stringify(voted));
@@ -105,4 +106,4 @@ function renderError() {
 
 document.getElementById('searchInput').addEventListener('input', () => renderFaqs());
 
-loadFaqs();
+initAuth().then(loadFaqs);
