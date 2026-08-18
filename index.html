@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>전남온라인학교 FAQ</title>
+  <meta name="description" content="전남온라인학교 운영 관련 자주 묻는 질문 모음">
   <link rel="icon" href="images/logo.png">
   <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -24,40 +25,39 @@
   </div>
 </nav>
 
-<div class="hero">
-  <img src="images/logo.png" alt="전남온라인학교" class="hero-logo">
-  <h1>자주 묻는 질문</h1>
-  <p>전남온라인학교 운영과 관련된 자주 묻는 질문들을 모아두었습니다.</p>
+<header class="hero">
+  <img src="images/logo.png" alt="" class="hero-logo">
+  <h1>무엇을 도와드릴까요?</h1>
+  <p class="sub">전남온라인학교 운영 관련 자주 묻는 질문을 모아두었습니다.</p>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="질문을 검색해보세요..." autocomplete="off">
+    <input type="text" id="searchInput" placeholder="궁금한 내용을 검색해보세요" autocomplete="off">
+    <span class="search-kbd">/</span>
   </div>
-</div>
+</header>
 
 <div class="stats-bar">
   <div class="stat-item">
-    <div class="num" id="totalCount">0</div>
+    <div class="num" id="totalCount">-</div>
     <div class="label">전체 FAQ</div>
   </div>
   <div class="stat-item">
-    <div class="num" id="catCount">0</div>
+    <div class="num" id="catCount">-</div>
     <div class="label">카테고리</div>
   </div>
   <div class="stat-item">
-    <div class="num" id="boardCount">0</div>
+    <div class="num" id="boardCount">-</div>
     <div class="label">게시판 질문</div>
   </div>
 </div>
 
-<div class="container">
-  <div class="cat-tabs" id="catTabs">
-    <button class="cat-tab active" data-cat="전체">전체</button>
-  </div>
-
+<main class="container">
+  <div class="cat-tabs" id="catTabs"></div>
+  <div class="result-info" id="resultInfo"></div>
   <div class="faq-list" id="faqList">
-    <div class="loading">FAQ를 불러오는 중...</div>
+    <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
   </div>
-</div>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js"></script>

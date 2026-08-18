@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>관리자 - 전남온라인학교 FAQ</title>
+  <title>관리 - 전남온라인학교</title>
   <link rel="icon" href="images/logo.png">
   <link rel="stylesheet" href="css/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -18,18 +18,17 @@
     <div class="nav-links">
       <a href="index.html">FAQ</a>
       <a href="board.html">질문 게시판</a>
-      <a href="admin.html" class="active">관리자</a>
     </div>
     <div id="authArea"></div>
   </div>
 </nav>
 
-<!-- 로그인 화면 -->
+<!-- 로그인 필요 -->
 <div class="login-wrap" id="loginWrap" style="display:none">
   <div class="login-card">
-    <img src="images/logo.png" alt="" style="width:70px;height:70px;margin-bottom:1rem">
-    <h2>관리자 로그인</h2>
-    <p>관리자로 등록된 Google 계정으로 로그인하세요</p>
+    <img src="images/logo.png" alt="" style="width:66px;height:66px;margin-bottom:1rem">
+    <h2>구성원 로그인</h2>
+    <p>관리자 또는 교직원으로 등록된<br>Google 계정으로 로그인하세요</p>
     <button class="btn-google" style="width:100%;justify-content:center" onclick="signInWithGoogle()">
       <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C36.9 40.2 44 35 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
       Google 계정으로 로그인
@@ -40,60 +39,73 @@
 <!-- 권한 없음 -->
 <div class="login-wrap" id="noAccessWrap" style="display:none">
   <div class="login-card">
-    <div style="font-size:2.5rem;margin-bottom:0.5rem">🚫</div>
+    <div style="font-size:2.6rem;margin-bottom:.5rem">🚫</div>
     <h2>접근 권한이 없습니다</h2>
-    <p id="noAccessEmail" style="margin-bottom:1.5rem"></p>
-    <p style="font-size:0.85rem">관리자 권한이 필요합니다.<br>담당자에게 문의해주세요.</p>
-    <div style="display:flex;gap:0.5rem;margin-top:1.5rem">
+    <p id="noAccessEmail" style="margin-bottom:1.2rem"></p>
+    <p style="font-size:.86rem">이 페이지는 관리자·교직원 전용입니다.<br>권한이 필요하면 담당자에게 문의해주세요.</p>
+    <div style="display:flex;gap:.5rem;margin-top:1.6rem">
       <button class="btn btn-secondary" style="flex:1" onclick="signOut()">로그아웃</button>
-      <a href="index.html" class="btn btn-primary" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center">FAQ로 이동</a>
+      <a href="index.html" class="btn btn-primary" style="flex:1;text-decoration:none">FAQ로 이동</a>
     </div>
   </div>
 </div>
 
-<!-- 관리자 패널 -->
-<div id="adminPanel" style="display:none">
+<!-- 관리 패널 -->
+<main id="adminPanel" style="display:none">
   <div class="container">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-      <h2 style="font-size:1.3rem;font-weight:700">관리자 패널</h2>
+    <div class="admin-head">
+      <h2>관리 페이지<span class="role-pill" id="rolePill"></span></h2>
     </div>
 
-    <div class="admin-tabs">
-      <button class="admin-tab active" data-panel="faq">FAQ 관리</button>
-      <button class="admin-tab" data-panel="board">게시판 답변 <span class="badge" id="pendingBadge">0</span></button>
-      <button class="admin-tab" data-panel="admins">관리자 관리</button>
+    <div class="admin-stats" id="adminStats"></div>
+
+    <div class="admin-tabs" id="adminTabs">
+      <button class="admin-tab active" data-panel="board">
+        답변 관리 <span class="tag" id="pendingBadge" style="background:var(--orange-soft);color:#c96a0a">0</span>
+      </button>
+      <button class="admin-tab admin-only" data-panel="faq">FAQ 관리</button>
+      <button class="admin-tab admin-only" data-panel="members">구성원 관리</button>
     </div>
+
+    <!-- 답변 관리 -->
+    <section class="admin-panel active" id="panel-board">
+      <div class="cat-tabs" id="answerFilter">
+        <button class="cat-tab active" data-f="답변대기">⏳ 답변 대기</button>
+        <button class="cat-tab" data-f="답변완료">✅ 답변 완료</button>
+        <button class="cat-tab" data-f="전체">전체</button>
+      </div>
+      <div id="adminBoardList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
 
     <!-- FAQ 관리 -->
-    <div class="admin-panel active" id="panel-faq">
+    <section class="admin-panel" id="panel-faq">
       <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
         <button class="btn btn-primary btn-sm" id="addFaqBtn">+ FAQ 추가</button>
       </div>
-      <div id="adminFaqList"><div class="loading">불러오는 중...</div></div>
-    </div>
+      <div id="adminFaqList"><div class="skeleton"></div><div class="skeleton"></div></div>
+    </section>
 
-    <!-- 게시판 답변 -->
-    <div class="admin-panel" id="panel-board">
-      <div id="adminBoardList"><div class="loading">불러오는 중...</div></div>
-    </div>
-
-    <!-- 관리자 관리 -->
-    <div class="admin-panel" id="panel-admins">
+    <!-- 구성원 관리 -->
+    <section class="admin-panel" id="panel-members">
       <div class="notice">
         <span>⚠️</span>
-        <span>관리자로 등록된 Google 계정만 이 페이지에 접근할 수 있습니다.</span>
+        <span><b>관리자</b>는 모든 기능을, <b>교직원</b>은 게시판 답변만 사용할 수 있습니다.</span>
       </div>
-      <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
-        <input type="email" id="newAdminEmail" placeholder="추가할 관리자 Google 이메일" style="flex:1;padding:0.6rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit">
-        <input type="text" id="newAdminName" placeholder="이름(선택)" style="width:140px;padding:0.6rem 0.9rem;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit">
-        <button class="btn btn-primary btn-sm" id="addAdminBtn">추가</button>
+      <div class="inline-form">
+        <input type="email" id="newMemberEmail" placeholder="Google 이메일 주소" style="flex:1;min-width:200px">
+        <input type="text" id="newMemberName" placeholder="이름" style="width:120px">
+        <select id="newMemberRole">
+          <option value="staff">교직원</option>
+          <option value="admin">관리자</option>
+        </select>
+        <button class="btn btn-primary btn-sm" id="addMemberBtn">추가</button>
       </div>
-      <div id="adminUserList"><div class="loading">불러오는 중...</div></div>
-    </div>
+      <div id="memberList"><div class="skeleton"></div></div>
+    </section>
   </div>
-</div>
+</main>
 
-<!-- FAQ 추가/수정 모달 -->
+<!-- FAQ 모달 -->
 <div class="modal-overlay" id="faqModal">
   <div class="modal">
     <h3 id="faqModalTitle">FAQ 추가</h3>
@@ -101,11 +113,8 @@
     <div class="form-group">
       <label>카테고리</label>
       <select id="faqCatInput">
-        <option>수업 운영</option>
-        <option>출결 관리</option>
-        <option>시스템 이용</option>
-        <option>학적 관리</option>
-        <option>기타</option>
+        <option>수업 운영</option><option>출결 관리</option>
+        <option>시스템 이용</option><option>학적 관리</option><option>기타</option>
       </select>
     </div>
     <div class="form-group">
@@ -114,7 +123,7 @@
     </div>
     <div class="form-group">
       <label>답변</label>
-      <textarea id="faqAInput" placeholder="답변을 입력하세요" style="min-height:150px"></textarea>
+      <textarea id="faqAInput" placeholder="답변을 입력하세요" style="min-height:170px"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" id="faqModalCancelBtn">취소</button>
@@ -123,25 +132,23 @@
   </div>
 </div>
 
-<!-- 게시판 답변 모달 -->
+<!-- 답변 모달 -->
 <div class="modal-overlay" id="answerModal">
   <div class="modal">
-    <h3>질문 답변</h3>
+    <h3>💬 질문 답변</h3>
     <input type="hidden" id="answerPostId">
     <div class="post-detail-q">
       <div class="label">질문</div>
-      <div class="content" id="answerPostTitle" style="font-weight:600;margin-bottom:0.3rem"></div>
-      <div class="content" id="answerPostContent" style="margin-top:0.3rem;font-size:0.9rem"></div>
+      <div class="content" id="answerPostTitle" style="font-weight:700;margin-bottom:.4rem"></div>
+      <div class="content" id="answerPostContent" style="font-size:.9rem"></div>
     </div>
-    <div class="form-group" style="margin-top:1rem">
+    <div class="form-group" style="margin-top:1.1rem">
       <label>답변 작성</label>
       <textarea id="answerInput" placeholder="답변을 입력하세요"></textarea>
     </div>
-    <div style="margin-top:0.75rem">
-      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.88rem;cursor:pointer">
-        <input type="checkbox" id="addToFaqCheck"> 이 답변을 FAQ에도 등록
-      </label>
-    </div>
+    <label id="addToFaqLabel" style="display:flex;align-items:center;gap:.5rem;font-size:.88rem;cursor:pointer;margin-top:.5rem">
+      <input type="checkbox" id="addToFaqCheck" style="width:auto"> 이 답변을 FAQ에도 등록
+    </label>
     <div class="modal-actions">
       <button class="btn btn-secondary" id="answerCancelBtn">취소</button>
       <button class="btn btn-primary" id="answerSubmitBtn">답변 등록</button>
