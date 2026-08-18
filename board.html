@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>질문 게시판 - 전남온라인학교 FAQ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span>🌿</span> 전남온라인학교</a>
+  <div class="nav-links">
+    <a href="index.html">FAQ</a>
+    <a href="board.html" class="active">질문 게시판</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="board-header">
+    <div>
+      <h2>질문 게시판</h2>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.2rem">FAQ에서 찾지 못한 질문을 남겨주세요. 관리자가 답변해드립니다.</p>
+    </div>
+    <button class="btn btn-primary" id="writeBtn">+ 질문하기</button>
+  </div>
+
+  <div class="notice">
+    <span>💡</span>
+    <span>답변 완료된 질문은 자주 묻는 질문(FAQ)으로 등록될 수 있습니다.</span>
+  </div>
+
+  <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+    <button class="cat-tab active" data-filter="전체">전체</button>
+    <button class="cat-tab" data-filter="답변대기">답변 대기</button>
+    <button class="cat-tab" data-filter="답변완료">답변 완료</button>
+  </div>
+
+  <div class="post-list" id="postList">
+    <div class="loading">게시글을 불러오는 중...</div>
+  </div>
+</div>
+
+<!-- 질문 작성 모달 -->
+<div class="modal-overlay" id="writeModal">
+  <div class="modal">
+    <h3>✏️ 질문 작성</h3>
+    <div class="form-group">
+      <label>작성자 이름</label>
+      <input type="text" id="authorInput" placeholder="이름을 입력하세요">
+    </div>
+    <div class="form-group">
+      <label>카테고리</label>
+      <select id="categoryInput">
+        <option value="">카테고리 선택</option>
+        <option>수업 운영</option>
+        <option>출결 관리</option>
+        <option>시스템 이용</option>
+        <option>학적 관리</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>제목</label>
+      <input type="text" id="titleInput" placeholder="질문 제목을 입력하세요">
+    </div>
+    <div class="form-group">
+      <label>내용</label>
+      <textarea id="contentInput" placeholder="질문 내용을 자세히 작성해주세요"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="writeCancelBtn">취소</button>
+      <button class="btn btn-primary" id="writeSubmitBtn">등록하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 게시글 상세 모달 -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div id="detailContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="detailCloseBtn">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/board.js"></script>
+</body>
+</html>

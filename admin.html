@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 - 전남온라인학교 FAQ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span>🌿</span> 전남온라인학교</a>
+  <div class="nav-links">
+    <a href="index.html">FAQ</a>
+    <a href="board.html">질문 게시판</a>
+    <a href="admin.html" class="active">관리자</a>
+  </div>
+</nav>
+
+<!-- 로그인 화면 -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div style="font-size:2.5rem;margin-bottom:0.5rem">🔐</div>
+    <h2>관리자 로그인</h2>
+    <p>관리자 계정으로 로그인하세요</p>
+    <div class="form-group" style="text-align:left">
+      <label>이메일</label>
+      <input type="email" id="loginEmail" placeholder="admin@example.com">
+    </div>
+    <div class="form-group" style="text-align:left">
+      <label>비밀번호</label>
+      <input type="password" id="loginPassword" placeholder="비밀번호">
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" id="loginBtn">로그인</button>
+    <p id="loginError" style="color:#dc2626;font-size:0.82rem;margin-top:0.5rem;display:none">이메일 또는 비밀번호가 올바르지 않습니다.</p>
+  </div>
+</div>
+
+<!-- 관리자 패널 -->
+<div id="adminPanel" style="display:none">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
+      <h2 style="font-size:1.3rem;font-weight:700">관리자 패널</h2>
+      <button class="btn btn-secondary btn-sm" id="logoutBtn">로그아웃</button>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-panel="faq">FAQ 관리</button>
+      <button class="admin-tab" data-panel="board">게시판 답변 <span class="badge" id="pendingBadge">0</span></button>
+    </div>
+
+    <!-- FAQ 관리 -->
+    <div class="admin-panel active" id="panel-faq">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+        <button class="btn btn-primary btn-sm" id="addFaqBtn">+ FAQ 추가</button>
+      </div>
+      <div id="adminFaqList"><div class="loading">불러오는 중...</div></div>
+    </div>
+
+    <!-- 게시판 답변 -->
+    <div class="admin-panel" id="panel-board">
+      <div id="adminBoardList"><div class="loading">불러오는 중...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ 추가/수정 모달 -->
+<div class="modal-overlay" id="faqModal">
+  <div class="modal">
+    <h3 id="faqModalTitle">FAQ 추가</h3>
+    <input type="hidden" id="faqEditId">
+    <div class="form-group">
+      <label>카테고리</label>
+      <select id="faqCatInput">
+        <option>수업 운영</option>
+        <option>출결 관리</option>
+        <option>시스템 이용</option>
+        <option>학적 관리</option>
+        <option>기타</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>질문</label>
+      <input type="text" id="faqQInput" placeholder="질문을 입력하세요">
+    </div>
+    <div class="form-group">
+      <label>답변</label>
+      <textarea id="faqAInput" placeholder="답변을 입력하세요" style="min-height:150px"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="faqModalCancelBtn">취소</button>
+      <button class="btn btn-primary" id="faqModalSaveBtn">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 게시판 답변 모달 -->
+<div class="modal-overlay" id="answerModal">
+  <div class="modal">
+    <h3>질문 답변</h3>
+    <input type="hidden" id="answerPostId">
+    <div class="post-detail-q">
+      <div class="label">질문</div>
+      <div class="content" id="answerPostTitle" style="font-weight:600;margin-bottom:0.3rem"></div>
+      <div class="content" id="answerPostContent" style="margin-top:0.3rem;font-size:0.9rem"></div>
+    </div>
+    <div class="form-group" style="margin-top:1rem">
+      <label>답변 작성</label>
+      <textarea id="answerInput" placeholder="답변을 입력하세요"></textarea>
+    </div>
+    <div style="margin-top:0.75rem">
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.88rem;cursor:pointer">
+        <input type="checkbox" id="addToFaqCheck"> 이 답변을 FAQ에도 등록
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="answerCancelBtn">취소</button>
+      <button class="btn btn-primary" id="answerSubmitBtn">답변 등록</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

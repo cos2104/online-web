@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>전남온라인학교 FAQ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html"><span>🌿</span> 전남온라인학교</a>
+  <div class="nav-links">
+    <a href="index.html" class="active">FAQ</a>
+    <a href="board.html">질문 게시판</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>자주 묻는 질문</h1>
+  <p>전남온라인학교 운영과 관련된 자주 묻는 질문들을 모아두었습니다.</p>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="질문을 검색해보세요..." autocomplete="off">
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="num" id="totalCount">0</div>
+    <div class="label">전체 FAQ</div>
+  </div>
+  <div class="stat-item">
+    <div class="num" id="catCount">0</div>
+    <div class="label">카테고리</div>
+  </div>
+  <div class="stat-item">
+    <div class="num" id="boardCount">0</div>
+    <div class="label">게시판 질문</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="cat-tabs" id="catTabs">
+    <button class="cat-tab active" data-cat="전체">전체</button>
+  </div>
+
+  <div class="faq-list" id="faqList">
+    <div class="loading">FAQ를 불러오는 중...</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/faq.js"></script>
+</body>
+</html>
